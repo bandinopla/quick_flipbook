@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "name": "quick_flipbook",
+  "description": "A quick way to create a flipbook",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bandinopla/quick_flipbook.git"
+  }, 
+  "author": "Bandinopla",
+  "license": "ISC",
+  "scripts": { 
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "main": "./dist/flipbook.js",
+  "module": "./dist/flipbook.mjs",
+  "exports":{
+    ".": {
+        "import": "./dist/flipbook.mjs",
+        "require": "./dist/flipbook.js"
+      }
+  },
+  "files": [
+    "./dist/flipbook.mjs",
+    "./dist/flipbook.js" 
+  ],
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "vite": "^5.0.8"
+  }, 
+  "dependencies": {
+    "three": "^0.160.1",
+    "three.modifiers": "^2.5.7"
+  }
+}
