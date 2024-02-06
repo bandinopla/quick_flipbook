@@ -18,7 +18,7 @@ export type FlipBookConfig = {
     pageSubdivisions:number
 }
 
-type PageSource = String|THREE.Material;
+type PageSource = String|THREE.Material|null;
 
 
 
