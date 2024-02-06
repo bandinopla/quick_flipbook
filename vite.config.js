@@ -2,8 +2,7 @@
 import { defineConfig } from 'vite';
 import path from "path";
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs'; 
-import dts from 'vite-plugin-dts'
+import commonjs from '@rollup/plugin-commonjs';
 
 export default defineConfig({
   publicDir: 'public',

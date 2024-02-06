@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.5",
   "name": "quick_flipbook",
   "description": "A quick way to create a flipbook",
   "repository": {
@@ -14,24 +14,25 @@
   },
   "main": "./dist/flipbook.js",
   "module": "./dist/flipbook.mjs",
-  "types": "./dist/flipbook.d.ts", 
+  "types": "./dist/FlipBook.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/flipbook.mjs",
+      "import": {
+        "default":"./dist/flipbook.mjs",
+        "types":"./dist/FlipBook.d.ts"
+      },
       "require": "./dist/flipbook.js"
     }
   },
   "files": [
     "./dist/flipbook.mjs",
     "./dist/flipbook.js",
-    "./dist/flipbook.d.ts"
+    "./dist/*.d.ts"
   ],
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "vite": "^5.0.8",
-    "vite-plugin-dts": "^3.7.2",
-    "vue-tsc": "^1.8.27"
+    "vite": "^5.0.8"
   },
   "dependencies": {
     "@types/three": "^0.161.2",
