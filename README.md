@@ -49,7 +49,7 @@ You pass in an array of either:
 Takes a reference to a `FlipPage` object and makes the book animate towards that page, flipping as many pages as necesary to make sure the book shows that page.
 
 <details>
-  <summary>Same code</summary>
+  <summary>Sample code</summary>
 
 ```js
 function onMouseClick(event) {
@@ -76,7 +76,7 @@ function onMouseClick(event) {
 This should be called on your animation thick handler, so let the book animate itself (the page flipping...) it expects a delta value as parameter.
 
 <details>
-  <summary>Same code</summary>
+  <summary>Sample code</summary>
 
 ```js 
 const clock = new THREE.Clock();
