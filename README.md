@@ -15,9 +15,9 @@ npm install quick_flipbook
 ## Usage
 ```js
 //...
-import { Book } from 'quick_flipbook'; 
+import { FlipBook } from 'quick_flipbook'; 
 //...
-const book = new Book({
+const book = new FlipBook({
     flipDuration: .5, // in seconds. Time it takes to flip ONE PAGE.
     yBetweenPages:.001, // y space between stacked pages
     pageSubdivisions: 20 //page's plane subdivisions

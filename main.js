@@ -2,8 +2,8 @@
  * Example of how to use...
  */
 
-import * as THREE from 'three';
-import { Book } from './src/book'; //<-- quick_flipbook
+import * as THREE from 'three'; 
+import { FlipBook as Book } from './src/FlipBook';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
@@ -104,7 +104,6 @@ book.setPages([
     "https://placehold.co/600x400?text=last+page",    
     "https://placehold.co/600x400?text=Back+side", 
 ]); 
- 
   
   
 
