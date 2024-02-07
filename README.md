@@ -72,7 +72,7 @@ function onMouseClick(event) {
 </details>
 
 ### --> `book.animate(delta)`
-> This should be called on your animation thick handler, so let the book animate itself (the page flipping...) it expects a delta value as parameter.
+This should be called on your animation thick handler, so let the book animate itself (the page flipping...) it expects a delta value as parameter.
 
 <details>
   <summary>Sample code</summary>

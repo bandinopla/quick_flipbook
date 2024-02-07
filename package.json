@@ -1,5 +1,5 @@
 {
-  "version": "1.0.10",
+  "version": "1.0.11",
   "name": "quick_flipbook",
   "description": "A quick way to create a flipbook",
   "repository": {
@@ -8,7 +8,7 @@
   },
   "packageManager":"pnpm@8.14.1",
   "author": "Bandinopla",
-  "license": "ISC",
+  "license": "BSD-2-Clause",
   "scripts": {
     "dev": "vite",
     "build": "vite build && tsc"
