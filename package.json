@@ -1,11 +1,12 @@
 {
-  "version": "1.0.7",
+  "version": "1.0.8",
   "name": "quick_flipbook",
   "description": "A quick way to create a flipbook",
   "repository": {
     "type": "git",
     "url": "https://github.com/bandinopla/quick_flipbook.git"
   },
+  "packageManager":"pnpm@8.14.1",
   "author": "Bandinopla",
   "license": "ISC",
   "scripts": {
@@ -33,11 +34,13 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "vite": "^5.0.8",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@types/three": "^0.161.2"
   },
-  "dependencies": {
-    "@types/three": "^0.161.2",
-    "three": "^0.160.1",
+  "dependencies": { 
     "three.modifiers": "^2.5.7"
+  },
+  "peerDependencies": { 
+    "three": "^0.160.1"
   }
 }

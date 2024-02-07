@@ -1,6 +1,5 @@
 # Quick FlipBook
-[![npm version](https://badge.fury.io/js/quick_flipbook.svg)](https://www.npmjs.com/package/quick_flipbook)
-
+[![npm version](https://img.shields.io/npm/v/quick_flipbook.svg?logo=threedotjs)](https://www.npmjs.com/package/quick_flipbook)
 
 ![Logo](./demo.gif)
 
