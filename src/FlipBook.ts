@@ -25,6 +25,8 @@ type PageSource = String|THREE.Material|null;
 export class FlipBook extends THREE.Mesh 
 {
     private pages:FlipPage[];
+    private pool:FlipPage[]; 
+    private readonly _url2Loader:Map<string, Promise<THREE.Material>>;
     private readonly _pageSubdivisions:number;
     private _currentProgress:number;
     private _goalProgress:number;
@@ -37,6 +39,8 @@ export class FlipBook extends THREE.Mesh
     constructor( config:FlipBookConfig|null ) {
         super();
         this.pages = [];
+        this.pool = [];
+        this._url2Loader = new Map<string, Promise<THREE.Material>>();
         this._currentProgress = 0;
         this._flipDuration = config?.flipDuration || 1; // 1 second
         this._ySpacing = config?.yBetweenPages || 0.001;
@@ -53,11 +57,17 @@ export class FlipBook extends THREE.Mesh
      */
     setPages( pagesSources: PageSource[] ) 
     {     
+        if( pagesSources.length%2 !== 0 )
+        {
+            throw new RangeError(`The number of pages should be divisible by 2 (because one page has 2 faces). You called setPages with ${pagesSources.length} sources.`);
+        }  
+
         // remove old pages
         while(this.pages.length)
         {
             let page = this.pages.pop()!;
-            page.dispose();
+            page.reset();
+            this.pool.push( page );
             this.remove(page); 
         }
 
@@ -70,7 +80,12 @@ export class FlipBook extends THREE.Mesh
         {
             const urlA = pagesSources[i];
             const urlB = pagesSources[i+1];
-            const page = new FlipPage( this._pageSubdivisions );  
+            let page    = this.pool.pop();  
+
+            if( !page )
+            {
+                page = new FlipPage( this._pageSubdivisions );
+            }
             
             this.add(page);  
 
@@ -83,6 +98,21 @@ export class FlipBook extends THREE.Mesh
             //
             prom = prom.then( this.loadPages(urlA,urlB, page) ); 
         } 
+  
+
+        //
+        // if this happens it means that `setPages` was called with LESS pages than last time.
+        //
+        if( this.currentPage>this.pages.length*2-1 )
+        {
+            this._currentPage = this.pages.length*2-1; //<--- last page
+            this._currentProgress = this.pages.length; //<--- all pages are flipped (looking at the last page)
+        }
+
+        //
+        // send all pages to the current progress
+        //
+        this.flipPages(); 
     }
 
     /**
@@ -110,32 +140,47 @@ export class FlipBook extends THREE.Mesh
             return Promise.resolve();
         }
 
+        const url = source as string;
+
+        //
+        // check cache first
+        //
+        if( !this._url2Loader.has(url) )
+        {
+            //
+            // first time, cache it.
+            //
+            this._url2Loader.set(url, new Promise( (resolve, reject) => {
+
+                new THREE.TextureLoader().load( source as string, function ( texture ) {
+    
+                    texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
+                    texture.colorSpace = THREE.SRGBColorSpace; 
+                
+                    const material = new THREE.MeshStandardMaterial( { map: texture, roughness:0.2, emissive:0 } ); 
+                
+                    //page.setPageMaterial(material,side);
+    
+                    resolve(material);
+                
+                }
+                , undefined //TODO: show a progress bar or spinner...
+                , (err)=>{
+    
+                    // page failed to load... oh well... 
+                    // console.error("Failed to load a page: ", err);
+                    resolve(null);
+    
+                });
+    
+            }));
+        }
+
         //
         // es un string...
         //
-        return new Promise( (resolve, reject) => {
-
-            new THREE.TextureLoader().load( source as string, function ( texture ) {
-
-                texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
-                texture.colorSpace = THREE.SRGBColorSpace; 
-            
-                const material = new THREE.MeshStandardMaterial( { map: texture, roughness:0.2, emissive:0 } ); 
-            
-                page.setPageMaterial(material,side);
-
-                resolve();
-            
-            }
-            , undefined //TODO: show a progress bar or spinner...
-            , (err)=>{
-
-                // page failed to load... oh well... 
-                console.error("Failed to load a page: ", err);
-                resolve();
-
-            });
-
+        return this._url2Loader.get(url).then( material=>{
+            page.setPageMaterial(material,side);
         });
     }
 
@@ -156,7 +201,7 @@ export class FlipBook extends THREE.Mesh
         this._flipDirection = this._stepSize>0? 1 : -1;
 
         this._currentPage = n; 
-        this._goalProgress = goal;
+        this._goalProgress = goal; 
 
         this.flipPages(); 
     }
@@ -167,7 +212,12 @@ export class FlipBook extends THREE.Mesh
      * and the decimal portion is the progress of that integer page. 
      */
     get progress(){ return this._currentProgress; }
-    set progress(p){ this._currentProgress = p; }
+    set progress(p)
+    { 
+        this._currentProgress = Math.max(0, Math.min( p, this.pages.length*2+1)); 
+        this._stepSize = 0;
+        this.flipPages(); 
+    }
 
     /**
      * Call this to animate this book every frame.
@@ -199,11 +249,11 @@ export class FlipBook extends THREE.Mesh
      * @param page Page of interest
      */
     public flipPage( page:FlipPage )
-    {
+    { 
         var pageIndex = this.pages.indexOf( page );
 
         const A = pageIndex*2;
-        const B = A+1;  
+        const B = A+1;   
 
         this.currentPage = this._currentPage<=A? B : A;  
     }
@@ -252,5 +302,28 @@ export class FlipBook extends THREE.Mesh
                        0;
 
         this.position.x = offset * this.scale.x;  
+    }
+
+    /**
+     * Will dispose the book, the pages and all the materials used. Also the internal cache.
+     */
+    public dispose() 
+    {
+        while(this.pages.length)
+        {
+            let page = this.pages.pop()!; 
+            this.remove(page); 
+        }
+
+        while( this.pool.length )
+        {
+            this.pool.pop().dispose(true);
+        }
+
+        //
+        // dispose all cached materials & clear cache
+        //
+        this._url2Loader.forEach( m=> m.then(m=>m.dispose()) );
+        this._url2Loader.clear();
     }
 }

@@ -97,8 +97,36 @@ export class FlipPage extends THREE.Mesh {
         this.modifiers.apply();  
     }
 
-    public dispose(){
-        //TODO... dispose the materials or let the dev do it?
+    /**
+     * call dispose on the material of this face.
+     */
+    private disposeMaterial( faceIndex:number )
+    {
+        const material:THREE.Material = this.page.material[faceIndex];
+
+        if( material!==NOTEXTURE )
+        {
+            material.dispose();
+        } 
+    }
+
+    /**
+     * Just sets all materials to "no texture"
+     */
+    public reset() {
+        this.setPageMaterial(NOTEXTURE,0);
+        this.setPageMaterial(NOTEXTURE,1);
+    }
+
+    public dispose( materialToo:boolean=false ){ 
+        if( materialToo )
+        {
+            this.disposeMaterial(0);
+            this.disposeMaterial(1);
+        }
+
+        this.page.geometry.dispose();
+        this.modifiers.destroy();
     }
 
 }

@@ -105,6 +105,20 @@ book.setPages([
     "https://placehold.co/600x400?text=Back+side", 
 ]); 
   
+setTimeout( ()=>{
+
+    book.setPages([
+        "https://placehold.co/600x400?text=Test1", 
+        "https://placehold.co/600x400?text=Hello+World",  
+        null, //blank page 
+        null
+    ]); 
+    
+    // book.dispose();
+
+    //book.progress = 1.5;
+
+}, 3000 );
   
 
 function onWindowResize() {

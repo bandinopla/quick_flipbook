@@ -38,14 +38,14 @@ book.setPages([
 
 ## Controls
 
-### --> book.setPages(pagesSources)
+### --> `book.setPages(pagesSources)`
 You pass in an array of either:
 1. **null** = for blank pages
-2. **"a string"** = url to some image external or internal. `THREE.TextureLoader` will be used to load it.
-3. a `THREE.Material`
+2. **"a string"** = url to some image external or internal. `THREE.TextureLoader` will be used to load it. _Internally a dictionary will be used_ to cache the result so even if you call `setPages` multiple times passing the same url, internally, the url will be fetched once.
+3. a `THREE.Material`: if you pass a material you are responsable for that Material.
 
-### --> book.flipPage( page_reference );
-Takes a reference to a `FlipPage` object and makes the book animate towards that page, flipping as many pages as necesary to make sure the book shows that page.
+### --> `book.flipPage( page_reference )`
+Takes a reference to a `FlipPage` object and makes the book animate towards that page, flipping as many pages as necesary to make sure the book shows that page. The original idea of this method was to be used as in this example below:
 
 <details>
   <summary>Sample code</summary>
@@ -71,8 +71,8 @@ function onMouseClick(event) {
 ```
 </details>
 
-### --> book.animate(delta);
-This should be called on your animation thick handler, so let the book animate itself (the page flipping...) it expects a delta value as parameter.
+### --> `book.animate(delta)`
+> This should be called on your animation thick handler, so let the book animate itself (the page flipping...) it expects a delta value as parameter.
 
 <details>
   <summary>Sample code</summary>
@@ -90,3 +90,15 @@ animate();
 ```
 </details>
 
+### --> `book.progress = <Number>`
+You can manually set the progress from this flipbook ( _in case you want to animate it yourself_ ). The number should go from 0 to total page's faces. (2 pages = 4 faces) and the decimal portion will be the progress of the page at the whole number index. ( 1.5 will be page at index 1 will have %50 of the flip )
+<details>
+  <summary>Sample code</summary>
+
+```js 
+book.progress = 1.5; // page index:1 will be "flipped" %50
+```
+</details>
+
+### --> `book.dispose()`
+Will dispose all the geometries from the pages and dispose all the materials used. **Remove it from the scene after calling this.**
