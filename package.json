@@ -1,5 +1,5 @@
 {
-  "version": "1.0.8",
+  "version": "1.0.9",
   "name": "quick_flipbook",
   "description": "A quick way to create a flipbook",
   "repository": {
@@ -41,6 +41,6 @@
     "three.modifiers": "^2.5.7"
   },
   "peerDependencies": { 
-    "three": "^0.160.1"
+    "three": ">=0.160.1"
   }
 }
