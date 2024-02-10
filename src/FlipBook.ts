@@ -24,6 +24,9 @@ type PageSource = String|THREE.Material|null;
 
 export class FlipBook extends THREE.Mesh 
 {
+    /**
+     * Sheets of paper (each FlipPage holds 2 "pages")
+     */
     private pages:FlipPage[];
     private pool:FlipPage[]; 
     private readonly _url2Loader:Map<string, Promise<THREE.Material>>;
@@ -116,6 +119,13 @@ export class FlipBook extends THREE.Mesh
     }
 
     /**
+     * Returns the total number of pages.
+     */
+    get totalPages() {
+        return this.pages.length*2; // sheets of paper * 2 (1 sheet has 2 pages, back and front)
+    }
+
+    /**
      * Loads the 2 faces of a page at the same time...
      */
     private loadPages( sourceA:PageSource, sourceB:PageSource, page:FlipPage ){
@@ -185,8 +195,7 @@ export class FlipBook extends THREE.Mesh
     }
 
     /**
-     * Gets the current page's face index in which we are focused. 
-     * This is the index of the URLS we used in `setPages`
+     * The current "page" (as you would read on a book, the page number...)
      */
     get currentPage()  { return this._currentPage; }
     set currentPage(n) { 
@@ -200,7 +209,7 @@ export class FlipBook extends THREE.Mesh
         this._stepSize = distance / this._flipDuration;
         this._flipDirection = this._stepSize>0? 1 : -1;
 
-        this._currentPage = n; 
+        this._currentPage = Math.ceil(n); 
         this._goalProgress = goal; 
 
         this.flipPages(); 
@@ -208,8 +217,9 @@ export class FlipBook extends THREE.Mesh
 
     /**
      * Each page has a progress that goes form 0 to 1. 
-     * Here, the progress of a book goes form 0 to [Total Pages] (not faces/sources)
+     * Here, the progress of a book goes form 0 to `Total Pages` (but in this case, by "page" we mean paper, a paper has 2 pages, the fornt and back page...)
      * and the decimal portion is the progress of the flip of that page. 
+     * If you have 3 pages, for example, to send the user to the last page's back side, you have to call .progress = 3 (which is almost equivalent to 2.9999... )
      */
     get progress(){ return this._currentProgress; }
     set progress(p)
@@ -268,14 +278,14 @@ export class FlipBook extends THREE.Mesh
      * Send the book to the next page
      */
     public nextPage(){
-        this.currentPage = Math.min( this.currentPage+1, this.pages.length*2 );
+        this.currentPage = Math.min( Math.ceil(this.currentPage/2) +1, this.pages.length ) * 2; 
     }
 
     /**
      * Send the book to the previous page
      */
     public previousPage(){
-        this.currentPage = Math.max( this.currentPage-1, 0 );
+        this.currentPage = Math.max( Math.ceil(this.currentPage/2)-1, 0 ) * 2;
     }
 
     /**

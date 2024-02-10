@@ -20,7 +20,7 @@ const flipXUV = (geo:THREE.PlaneGeometry) => {
 }
 
 
-const NOTEXTURE = new THREE.MeshStandardMaterial({ color: "#ff00ff" });
+const NOTEXTURE = new THREE.MeshStandardMaterial({ color: "#ffffff" });
 
 
 /**

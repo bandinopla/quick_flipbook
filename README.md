@@ -94,14 +94,17 @@ animate();
 </details>
 
 ### --> `book.progress = <Number>`
-You can manually set the progress from this flipbook ( _in case you want to animate it yourself_ ). The number should go from 0 to total page's faces. (2 pages = 4 faces) and the decimal portion will be the progress of the page at the whole number index. ( 1.5 will be page at index 1 will have %50 of the flip )
+You can manually set the progress from this flipbook ( _in case you want to animate it yourself_ ). The number should go from 0 to total pages (as in sheet of paper) (1 page has 2 faces) and the decimal portion will be the progress of the page at the whole number index. ( 1.5 will be page at index 1 will have %50 of the flip )
 <details>
   <summary>Sample code</summary>
 
 ```js 
-book.progress = 1.5; // page index:1 will be "flipped" %50
+book.progress = 1.5; // the paper at index 1, flipped %50 toward it's back side. (the backpage)
 ```
 </details>
+
+### --> `book.totalPages`
+the total number of pages of the book
 
 ### --> `book.dispose()`
 Will dispose all the geometries from the pages and dispose all the materials used. **Remove it from the scene after calling this.**
