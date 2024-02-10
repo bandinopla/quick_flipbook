@@ -208,14 +208,17 @@ export class FlipBook extends THREE.Mesh
 
     /**
      * Each page has a progress that goes form 0 to 1. 
-     * Here, the progress of a book goes form 0 to [Total Pages]
-     * and the decimal portion is the progress of that integer page. 
+     * Here, the progress of a book goes form 0 to [Total Pages] (not faces/sources)
+     * and the decimal portion is the progress of the flip of that page. 
      */
     get progress(){ return this._currentProgress; }
     set progress(p)
     { 
-        this._currentProgress = Math.max(0, Math.min( p, this.pages.length*2+1)); 
-        this._stepSize = 0;
+        let oldProgress         = this._currentProgress; 
+        this._currentProgress   = Math.max(0, Math.min( p, this.pages.length )); //this.pages.length*2+1
+        this._currentPage       = Math.floor( this._currentProgress * 2)
+        this._stepSize          = 0;
+        this._flipDirection     = this._currentProgress>oldProgress? 1 : -1;
         this.flipPages(); 
     }
 
@@ -252,10 +255,27 @@ export class FlipBook extends THREE.Mesh
     { 
         var pageIndex = this.pages.indexOf( page );
 
+        if(pageIndex<0) 
+            throw new ReferenceError("I don't own that page! Not mine!");
+
         const A = pageIndex*2;
         const B = A+1;   
 
         this.currentPage = this._currentPage<=A? B : A;  
+    }
+
+    /**
+     * Send the book to the next page
+     */
+    public nextPage(){
+        this.currentPage = Math.min( this.currentPage+1, this.pages.length*2 );
+    }
+
+    /**
+     * Send the book to the previous page
+     */
+    public previousPage(){
+        this.currentPage = Math.max( this.currentPage-1, 0 );
     }
 
     /**
@@ -264,8 +284,11 @@ export class FlipBook extends THREE.Mesh
     private flipPages()
     {
         const totalPages = this.pages.length;
+
+        // progress of the "flip" of the current page
         let activeProgress = this._currentProgress % 1;
       
+        // index of the current page
         let activeIndex = Math.floor(this._currentProgress);  
         
         //

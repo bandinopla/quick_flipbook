@@ -21,7 +21,7 @@ export default defineConfig({
         external: [
             "three",
             "three.modifiers",
-            "three/addons/utils/BufferGeometryUtils.js" 
+            "three/examples/jsm/utils/BufferGeometryUtils.js" 
         ], 
     }
   }, 

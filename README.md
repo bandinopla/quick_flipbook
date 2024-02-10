@@ -71,6 +71,9 @@ function onMouseClick(event) {
 ```
 </details>
 
+### --> `book.nextPage()` & `book.previousPage()`
+Flip a page of the book forward or backwards by one page.
+
 ### --> `book.animate(delta)`
 This should be called on your animation thick handler, so let the book animate itself (the page flipping...) it expects a delta value as parameter.
 
