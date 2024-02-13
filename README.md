@@ -29,8 +29,8 @@ scene.add(book);
 book.setPages([
     "https://placehold.co/600x400?text=Cover+page", 
     "https://placehold.co/600x400?text=Backside+of+cover",  
-    null, //blank page
-    null, //blank page
+    "", //blank page
+    "", //blank page
     "https://placehold.co/600x400?text=last+page",    
     "https://placehold.co/600x400?text=Back+side", 
 ]); 
@@ -104,7 +104,31 @@ book.progress = 1.5; // the paper at index 1, flipped %50 toward it's back side.
 </details>
 
 ### --> `book.totalPages`
-the total number of pages of the book
+the total number of pages of the book. **Do not confuse with sheets of paper** 2 pages = 1 paper mesh (a sheet)
 
 ### --> `book.dispose()`
 Will dispose all the geometries from the pages and dispose all the materials used. **Remove it from the scene after calling this.**
+
+## Deformations / Page bending
+
+The book uses [three.modifiers](https://github.com/drawcall/threejs-mesh-modifiers) to bend the plane of the pages. 
+
+1. [Bend](https://github.com/drawcall/threejs-mesh-modifiers/blob/master/src/modifiers/Bend.ts)
+2. [Twist](https://github.com/drawcall/threejs-mesh-modifiers/blob/master/src/modifiers/Twist.ts)
+3. custom [PageCurve](https://github.com/bandinopla/quick_flipbook/tree/main/src/modifier/PageCurve.ts)
+
+To access the relevant controllers for such deformations to tweak them do this:
+
+```js
+    //
+    // for each FlipPage of the book...
+    //
+    for (const page of book) 
+    {
+        page.pageCurve; //<-- PageCurve 
+        page.bend; //<--  Bend modifier
+        page.twist; //<-- Twist modifier
+
+        page.modifiers.apply(); // call this after modifying a deformation.
+    }
+```

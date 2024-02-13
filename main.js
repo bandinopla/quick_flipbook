@@ -8,7 +8,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
-
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 const width = window.innerWidth;
 const height = window.innerHeight;
 
@@ -20,21 +20,23 @@ let cameraPosition;
 let zoom = 0;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xe0e0e0); 
+scene.background = new THREE.Color(0x999999); 
 
-const light = new THREE.DirectionalLight( 0xffffff, 4 );
+const light = new THREE.DirectionalLight( 0xffffff,1 );
  
 light.position.set( .2, 1, 0 );
 light.castShadow = true;
 //Set up shadow properties for the light
-light.shadow.mapSize.width = 512*4; // default
-light.shadow.mapSize.height = 512*4; // default
+light.shadow.mapSize.width = 512*8; // default
+light.shadow.mapSize.height = 512*8; // default
 light.shadow.camera.near = 0.5; // default
 light.shadow.camera.far = 3; // default
-light.shadow.bias = -0.02;
+light.shadow.bias = -0.003;
+light.shadow.blurSamples=3;
 
 scene.add( light );
-scene.add( new THREE.AmbientLight( 0xffffff) );
+const ambientLight = new THREE.AmbientLight( 0xffffff, 2);
+scene.add( ambientLight );
  
 
 const MAXFOV = 40;
@@ -42,10 +44,11 @@ const camera = new THREE.PerspectiveCamera( 0, width / height, 0.1, 1000 );
 camera.setFocalLength(MAXFOV);
 
 const renderer = new THREE.WebGLRenderer();
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.setSize( width, height );
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
+ renderer.shadowMap.enabled = true;
+ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+ renderer.setSize( width, height );
+// //renderer.toneMapping = THREE.ACESFilmicToneMapping;
+ renderer.toneMapping = THREE.NoToneMapping;
 document.body.appendChild( renderer.domElement );
   
  
@@ -97,28 +100,28 @@ book.scale.x = 0.8;
 scene.add(book);
  
 book.setPages([
-    "https://placehold.co/600x400?text=Cover+page", 
-    "https://placehold.co/600x400?text=Backside+of+cover",  
-    null, //blank page
-    null, //blank page
-    "https://placehold.co/600x400?text=last+page",    
-    "https://placehold.co/600x400?text=Back+side", 
+    "/page1.ignore.png", 
+    "/loremipsum.ignore.png",
+    "/page2.ignore.png", 
+    "/page3.ignore.png", 
+    "/page4.ignore.png",   
+    "/page5.ignore.png",   
 ]); 
   
-setTimeout( ()=>{
+// setTimeout( ()=>{
 
-    book.setPages([
-        "https://placehold.co/600x400?text=Test1", 
-        "https://placehold.co/600x400?text=Hello+World",  
-        null, //blank page 
-        null
-    ]); 
+//     book.setPages([
+//         "https://placehold.co/600x400?text=Test1", 
+//         "https://placehold.co/600x400?text=Hello+World",  
+//         null, //blank page 
+//         null
+//     ]); 
     
-    // book.dispose();
+//     // book.dispose();
 
-    //book.progress = 1.5;
+//     //book.progress = 1.5;
 
-}, 3000 );
+// }, 3000 );
   
 
 function onWindowResize() {
@@ -205,3 +208,50 @@ function animate() {
 animate();
 
 //**************************************************************** */ 
+
+const panel = new GUI( { width: 310 } );
+const folder1 = panel.addFolder( 'Page deformation' );
+const folder2 = panel.addFolder( 'Book' );
+const folder3 = panel.addFolder( 'Scene' );
+
+const effects = {
+    heightIntensity: 0.054,
+    curveEffectRange: 0.735,
+    midEffect:0.325,
+    intensity:1
+} 
+
+folder1.add( effects, 'heightIntensity', 0, 3 ).onChange( value => {
+    for (const page of book) {
+        page.pageCurve.elevationHeight = value;
+        page.modifiers.apply();
+    }
+});
+
+folder1.add( effects, 'curveEffectRange', 0, 1 ).onChange( value => {
+    for (const page of book) {
+        page.pageCurve.effectRange = value;
+        page.modifiers.apply();
+    }
+});
+
+folder1.add( effects, 'midEffect', 0, 1 ).onChange( value => {
+    for (const page of book) {
+        page.pageCurve.effectMid = value;
+        page.modifiers.apply();
+    }
+});
+
+folder1.add( effects, 'intensity', 0, 1 ).onChange( value => {
+    for (const page of book) {
+        page.pageCurve.intensity = value;
+        page.modifiers.apply();
+    }
+});
+
+folder2.add( { progress:0 }, 'progress', 0, book.totalPages/2 ).onChange( value => {
+    book.progress = value ;
+});
+
+folder3.add( ambientLight, 'intensity', 0, 5 ) ;
+

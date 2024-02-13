@@ -20,9 +20,43 @@ export type FlipBookConfig = {
 
 type PageSource = String|THREE.Material|null;
 
+const AOTexture = (function() {
+ 
+
+    var texture : THREE.Texture;
+
+    return ()=>{
+
+        if(!texture) 
+        { 
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; // Width of the canvas
+            canvas.height = 256; // Height of the canvas
+
+            // Get the 2D context of the canvas
+            const ctx = canvas.getContext('2d');
+
+            // Create a gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            gradient.addColorStop(0, 'black'); // Start color (red)
+            gradient.addColorStop(0.1, 'white'); // End color (blue)
+
+            // Fill the canvas with the gradient
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            texture = new THREE.CanvasTexture(canvas);
+
+            canvas.remove(); 
+        }
+
+        return texture;
+
+    }
+})();
 
 
-export class FlipBook extends THREE.Mesh 
+export class FlipBook extends THREE.Mesh implements Iterable<FlipPage>
 {
     /**
      * Sheets of paper (each FlipPage holds 2 "pages")
@@ -49,7 +83,22 @@ export class FlipBook extends THREE.Mesh
         this._ySpacing = config?.yBetweenPages || 0.001;
         this._pageSubdivisions = config?.pageSubdivisions || 20;
         this.currentPage = 0; 
-    } 
+    }
+
+    [Symbol.iterator](): Iterator<FlipPage> {
+        let index = 0;
+         
+        return {
+             
+            next: (): IteratorResult<FlipPage> => {
+                if (index < this.pages.length) {
+                    return { value: this.pages[index++], done: false };
+                } else {
+                    return { value: null as any, done: true };
+                }
+            }
+        };
+    }
 
     /** 
      * Initialize the book. Pass in the URLs to the images to use for each page.
@@ -62,7 +111,8 @@ export class FlipBook extends THREE.Mesh
     {     
         if( pagesSources.length%2 !== 0 )
         {
-            throw new RangeError(`The number of pages should be divisible by 2 (because one page has 2 faces). You called setPages with ${pagesSources.length} sources.`);
+            //throw new RangeError(`The number of pages should be divisible by 2 (because one page has 2 faces). You called setPages with ${pagesSources.length} sources.`);
+            pagesSources.push(""); // an empty page
         }  
 
         // remove old pages
@@ -120,6 +170,7 @@ export class FlipBook extends THREE.Mesh
 
     /**
      * Returns the total number of pages.
+     * **Do not confuse with the number of sheets of paper**
      */
     get totalPages() {
         return this.pages.length*2; // sheets of paper * 2 (1 sheet has 2 pages, back and front)
@@ -141,6 +192,14 @@ export class FlipBook extends THREE.Mesh
     private loadPage( source:PageSource, side:number, page:FlipPage ):Promise<void> {
         if( !source || source==='')
         {
+            const blankPage = new THREE.MeshStandardMaterial( { 
+                color:"white",
+                roughness:0.2, 
+                aoMapIntensity:.7,
+                aoMap: side==1? AOTexture() : null
+            } );
+
+            page.setPageMaterial(blankPage,side);
             return Promise.resolve();
         }
 
@@ -164,10 +223,19 @@ export class FlipBook extends THREE.Mesh
 
                 new THREE.TextureLoader().load( source as string, function ( texture ) {
     
-                    texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.generateMipmaps = false;
                     texture.colorSpace = THREE.SRGBColorSpace; 
                 
-                    const material = new THREE.MeshStandardMaterial( { map: texture, roughness:0.2, emissive:0 } ); 
+                    const material = new THREE.MeshStandardMaterial( { 
+                        color:"white",
+                        map: texture, 
+                        roughness:0.2, 
+                        aoMapIntensity:.7, 
+                        aoMap: side==1? AOTexture() : null,
+                        toneMapped:false
+                    } ); 
                 
                     //page.setPageMaterial(material,side);
     
@@ -220,6 +288,8 @@ export class FlipBook extends THREE.Mesh
      * Here, the progress of a book goes form 0 to `Total Pages` (but in this case, by "page" we mean paper, a paper has 2 pages, the fornt and back page...)
      * and the decimal portion is the progress of the flip of that page. 
      * If you have 3 pages, for example, to send the user to the last page's back side, you have to call .progress = 3 (which is almost equivalent to 2.9999... )
+     * 
+     * expects a number from `0` to `book.totalPages/2`
      */
     get progress(){ return this._currentProgress; }
     set progress(p)
@@ -317,8 +387,12 @@ export class FlipBook extends THREE.Mesh
             const yProgress     = pageProgress<0.5? 0 : (pageProgress - 0.5) / 0.5;
             const leftPileY     = -this._ySpacing * (totalPages-i);
             const rightPileY    = -this._ySpacing * i;
+            const pageCurveEffectIntensity     = this._currentProgress<1? activeProgress : 
+                                                 this._currentProgress>=totalPages? 0 :
+                                                 this._currentProgress>=totalPages-1? 1-activeProgress 
+                                                 : 1;
 
-            page.flip(pageProgress, this._flipDirection); 
+            page.flip(pageProgress, this._flipDirection, pageCurveEffectIntensity); 
 
             //
             // adjust y position according to the pile we are in...

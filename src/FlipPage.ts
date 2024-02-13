@@ -2,6 +2,7 @@ import * as THREE from 'three';
 //import {mergeGeometries} from "three/addons/utils/BufferGeometryUtils.js"; //not available in CJS 
 import {mergeGeometries} from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import * as MODIFIERS from "three.modifiers";
+import {PageCurve} from "./modifier/PageCurve";
 
 const flipXUV = (geo:THREE.PlaneGeometry) => {
 
@@ -28,10 +29,15 @@ const NOTEXTURE = new THREE.MeshStandardMaterial({ color: "#ffffff" });
  */
 export class FlipPage extends THREE.Mesh { 
 
-    private readonly modifiers:MODIFIERS.ModifierStack;
-    private readonly bend: MODIFIERS.Bend;
-    private readonly twist:MODIFIERS.Twist;
-    private readonly page:THREE.Mesh;
+    readonly modifiers:MODIFIERS.ModifierStack;
+    readonly bend: MODIFIERS.Bend;
+    readonly twist:MODIFIERS.Twist;
+
+    /**
+     * The plane geometry of this page
+     */
+    readonly page:THREE.Mesh;
+    readonly pageCurve:PageCurve;
 
     constructor( subdivisions:number=10 ) {
         super();   
@@ -66,9 +72,18 @@ export class FlipPage extends THREE.Mesh {
         this.bend.constraint = MODIFIERS.ModConstant.LEFT;  
 
         this.twist = new MODIFIERS.Twist(0);
-        this.twist.vector = new MODIFIERS.Vector3(1, 0, 0);
+        this.twist.vector = new MODIFIERS.Vector3(2, 0, 0);
         this.twist.center = new MODIFIERS.Vector3(-0.5, 0, 0);
 
+        this.pageCurve = new PageCurve(
+            MODIFIERS.ModConstant.Z, 
+            MODIFIERS.ModConstant.X,
+            0.812,
+            0.325,
+            0.054
+            ); 
+
+        this.modifiers.addModifier(this.pageCurve);
         this.modifiers.addModifier(this.bend);
         this.modifiers.addModifier(this.twist);  
     }
@@ -86,13 +101,15 @@ export class FlipPage extends THREE.Mesh {
      * Sets the internal progress of the flip of this page. 0 = no flip. 1 = fully flipped to the otehr side.
      * @param progress a number from 0 to 1
      * @param direction either -1 or 1 to know to which side we are flipping (this is used to invert the bending of the page to the correct side on flip)
+     * @param pageCurveIntensity Intensity of the page curve modifier effect
      */
-    public flip( progress:number, direction:number )
+    public flip( progress:number, direction:number, pageCurveIntensity:number=1 )
     {
         this.rotation.z = Math.PI * progress;
 
         this.bend.force = Math.min( -Math.sin( this.rotation.z ) / 2, -0.0001) * direction ;  
         this.twist.angle = Math.sin( this.rotation.z ) / 10;
+        this.pageCurve.intensity =  (-1+2*progress) * (-Math.sin( this.rotation.z )+1) * pageCurveIntensity;
          
         this.modifiers.apply();  
     }
