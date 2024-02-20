@@ -5,8 +5,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 
 export default defineConfig({
-  publicDir: 'public',
-  assetsInclude: ['**/*.gltf','**/*.exr','**/*.jpg'],
+  publicDir:false,
   plugins: [nodeResolve(), commonjs() ],
   build: {
     manifest: true,
