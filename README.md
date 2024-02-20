@@ -38,11 +38,16 @@ book.setPages([
 
 ## Controls
 
-### --> `book.setPages(pagesSources)`
-You pass in an array of either:
-1. **null** = for blank pages
-2. **"a string"** = url to some image external or internal. `THREE.TextureLoader` will be used to load it. _Internally a dictionary will be used_ to cache the result so even if you call `setPages` multiple times passing the same url, internally, the url will be fetched once.
-3. a `THREE.Material`: if you pass a material you are responsable for that Material.
+### --> `book.setPages( Source[] )`
+Sets the source of each page of the book. An **array of**...
+
+Source | Description
+---|---
+"" | An empty string will be interpreted as a blank page
+`null` | same as above but in this case `null`
+`string` | A string will internally be loaded using [`THREE.TextureLoader`](https://threejs.org/docs/#api/en/loaders/TextureLoader)
+`THREE.Texture` | A texture will be put in the `map` of the internal `THREE.MeshStandardMaterial` of the page
+`THREE.Material` | Will use this material instead of the internal `THREE.MeshStandardMaterial` we use. **Note:** We are putting a shadow on our internal material as an AO map, to simulate lack of light near the edge of the page. If you use your own material it won't have this decorative effects...
 
 ### --> `book.flipPage( page_reference )`
 Takes a reference to a `FlipPage` object and makes the book animate towards that page, flipping as many pages as necesary to make sure the book shows that page. The original idea of this method was to be used as in this example below:

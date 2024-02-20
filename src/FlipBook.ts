@@ -18,7 +18,7 @@ export type FlipBookConfig = {
     pageSubdivisions:number
 }
 
-type PageSource = String|THREE.Material|null;
+type PageSource = String|THREE.Material|THREE.Texture|null;
 
 const AOTexture = (function() {
  
@@ -209,6 +209,12 @@ export class FlipBook extends THREE.Mesh implements Iterable<FlipPage>
             return Promise.resolve();
         }
 
+        if( source instanceof THREE.Texture )
+        {  
+            page.setPageMaterial(this.textureToMaterial(source, side),side);
+            return Promise.resolve();
+        }
+
         const url = source as string;
 
         //
@@ -221,25 +227,9 @@ export class FlipBook extends THREE.Mesh implements Iterable<FlipPage>
             //
             this._url2Loader.set(url, new Promise( (resolve, reject) => {
 
-                new THREE.TextureLoader().load( source as string, function ( texture ) {
+                new THREE.TextureLoader().load( source as string, texture => {
     
-                    texture.magFilter = THREE.LinearFilter;
-                    texture.minFilter = THREE.LinearFilter;
-                    texture.generateMipmaps = false;
-                    texture.colorSpace = THREE.SRGBColorSpace; 
-                
-                    const material = new THREE.MeshStandardMaterial( { 
-                        color:"white",
-                        map: texture, 
-                        roughness:0.2, 
-                        aoMapIntensity:.7, 
-                        aoMap: side==1? AOTexture() : null,
-                        toneMapped:false
-                    } ); 
-                
-                    //page.setPageMaterial(material,side);
-    
-                    resolve(material);
+                    resolve(this.textureToMaterial(texture, side));
                 
                 }
                 , undefined //TODO: show a progress bar or spinner...
@@ -260,6 +250,23 @@ export class FlipBook extends THREE.Mesh implements Iterable<FlipPage>
         return this._url2Loader.get(url).then( material=>{
             page.setPageMaterial(material,side);
         });
+    }
+
+    private textureToMaterial( texture:THREE.Texture, side:number )
+    {
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        texture.colorSpace = THREE.SRGBColorSpace; 
+
+        return new THREE.MeshStandardMaterial( { 
+            color:"white",
+            map: texture, 
+            roughness:0.2, 
+            aoMapIntensity:.7, 
+            aoMap: side==1? AOTexture() : null,
+            toneMapped:false
+        } ); 
     }
 
     /**
